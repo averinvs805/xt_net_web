@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "3.1.2. Text Analysis", "3.1.2. Text Analysis\3.1.2. Text Analysis.csproj", "{94511170-AC2E-4CE1-87F2-BDE154DC8E7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3.1.1. Weakest Link", "3.1.1. Weakest Link\3.1.1. Weakest Link.csproj", "{C7FB4BB3-2CF2-4211-AAE9-A0CE4ECAC07A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{94511170-AC2E-4CE1-87F2-BDE154DC8E7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94511170-AC2E-4CE1-87F2-BDE154DC8E7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94511170-AC2E-4CE1-87F2-BDE154DC8E7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94511170-AC2E-4CE1-87F2-BDE154DC8E7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7FB4BB3-2CF2-4211-AAE9-A0CE4ECAC07A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7FB4BB3-2CF2-4211-AAE9-A0CE4ECAC07A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7FB4BB3-2CF2-4211-AAE9-A0CE4ECAC07A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7FB4BB3-2CF2-4211-AAE9-A0CE4ECAC07A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54946F95-1F1F-4C78-B833-0EF2CCDEE0BD}
+	EndGlobalSection
+EndGlobal

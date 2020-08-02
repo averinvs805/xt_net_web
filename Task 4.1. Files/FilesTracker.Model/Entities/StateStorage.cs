@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Task_4._1._Files
+namespace FilesTracker.Model.Entities
 {
     /// <summary>
     /// Хранит состояние файлов
     /// </summary>
-    class StateStorage
+    public class StateStorage
     {
+        /// <summary>
+        /// Key - RelativePath\FileName
+        /// </summary>
         public Dictionary<string, StorageData> FilesData { private set; get; }
             = new Dictionary<string, StorageData>();
     }
@@ -18,7 +21,7 @@ namespace Task_4._1._Files
     /// <summary>
     /// Состояние одного файла
     /// </summary>
-    class StorageData
+    public class StorageData
     {
         /// <summary>
         /// Имя
@@ -27,7 +30,7 @@ namespace Task_4._1._Files
         /// <summary>
         /// Имя и путь
         /// </summary>
-        public string FullName { set; get; }
+        //public string FullName { set; get; }
         /// <summary>
         /// Относительный путь
         /// </summary>

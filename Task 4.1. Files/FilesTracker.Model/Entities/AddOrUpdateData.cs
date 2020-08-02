@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Task_4._1._Files
+namespace FilesTracker.Model
 {
     public class RowInformation
     {
@@ -15,7 +15,7 @@ namespace Task_4._1._Files
         /// <summary>
         /// новое содержимое
         /// </summary>
-        public string Context { set; get; }
+        public string Content { set; get; }
     }
 
     /// <summary>

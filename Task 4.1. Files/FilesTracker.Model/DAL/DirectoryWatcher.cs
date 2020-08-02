@@ -6,43 +6,32 @@ using System.Threading.Tasks;
 
 using System.IO;
 
-namespace Task_4._1._Files
+using FilesTracker.Model.Entities;
+using FilesTracker.Model.Tools;
+
+
+namespace FilesTracker.Model.DAL
 {
-    /// <summary>
-    /// Система для отслеживания изменений объекта
-    /// </summary>
-    class DirectoryTrackSystem
-            : IDisposable
+    public class DirectoryWatcher
+        : IDisposable
     {
         private readonly FileSystemWatcher FileSystemWatcher
             = new FileSystemWatcher();
 
-        private readonly TextDifference TextDifference
-            = new TextDifference();
+        private readonly FileProvider FileProvider
+            = new FileProvider();
+
         private readonly RelativePathFinder RelativePathFinder
             = new RelativePathFinder();
 
-        private readonly LayerProvider LayerProvider;
 
+        public event Action<LayerInfo, WatcherChangeTypes> OnDirectoryEvent;
 
-        private readonly LayerApplier LayerApplier
-            = new LayerApplier();
-        private readonly StateStorage StateStorage
-            = new StateStorage();
-
-
-
-        public DirectoryTrackSystem(DirectoryInfo layersDir)
-        {
-            LayerProvider
-                = new LayerProvider(layersDir);
-        }
-
+        public string Filter { set; get; } = "*.txt";
 
 
         public void StartListenDirectory(
-            DirectoryInfo observDir,
-            string filter = "*.txt"
+            DirectoryInfo observDir
             )
         {
             observDir.Refresh();
@@ -52,10 +41,16 @@ namespace Task_4._1._Files
                 throw new Exception("Наблюдаемая папка не найдено");
             }
 
-
             FileSystemWatcher.Path = observDir.FullName;
-            FileSystemWatcher.Filter = filter;
+            FileSystemWatcher.Filter = Filter;
             FileSystemWatcher.IncludeSubdirectories = true;
+
+            //FileSystemWatcher.NotifyFilter = 
+            //    NotifyFilters.LastAccess
+            //    | NotifyFilters.LastWrite
+            //    | NotifyFilters.CreationTime
+            //    | NotifyFilters.DirectoryName
+            //    | NotifyFilters.FileName;
 
             FileSystemWatcher.Deleted += Watcher_Deleted;
             FileSystemWatcher.Created += Watcher_Created;
@@ -66,7 +61,7 @@ namespace Task_4._1._Files
             FileSystemWatcher.EnableRaisingEvents = true;
         }
 
-        public void GoToLayer(DateTime dateTime) { }
+
 
 
         private void Watcher_Renamed(object sender, RenamedEventArgs e)
@@ -78,49 +73,43 @@ namespace Task_4._1._Files
             {
                 EventDate = DateTime.Now,
                 ChangeType = WatcherChangeTypes.Renamed,
-                FileName = e.OldName,
-                NewName = e.Name,
+                FileName = Path.GetFileName(e.OldName),
+                NewName = Path.GetFileName(e.Name),
                 RelativePath = RelativePathFinder.GetRelativePath(e.FullPath, FileSystemWatcher.Path)
             };
 
-            LayerApplier.Apply(StateStorage, layer);
-            LayerProvider.SaveLayer(layer);
+            OnDirectoryEvent?.Invoke(layer, e.ChangeType);
         }
-
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
             //string fileEvent = "изменен";
             //string filePath = e.FullPath;
 
-            var oldState = StateStorage.FilesData[""];
-            var newContent = File.ReadAllLines(e.FullPath);
-
             LayerInfo layer = new LayerInfo()
             {
                 EventDate = DateTime.Now,
                 ChangeType = WatcherChangeTypes.Changed,
-                FileName = e.Name,
-                AddOrUpdateData = TextDifference.Different(oldState.Text, newContent),
+                FileName = Path.GetFileName(e.Name),
                 RelativePath = RelativePathFinder.GetRelativePath(e.FullPath, FileSystemWatcher.Path)
             };
 
-            LayerApplier.Apply(StateStorage, layer);
-            LayerProvider.SaveLayer(layer);
-        }
+            OnDirectoryEvent?
+                .Invoke(layer, e.ChangeType);
 
+        }
         private void Watcher_Created(object sender, FileSystemEventArgs e)
         {
             //string fileEvent = "создан";
             //string filePath = e.FullPath;
 
-            var data = File.ReadAllLines(e.FullPath);
+            var data = FileProvider.TryReadAllLines(e.FullPath);
             int rowNumber = 0;
 
             LayerInfo layer = new LayerInfo()
             {
                 EventDate = DateTime.Now,
                 ChangeType = WatcherChangeTypes.Changed,
-                FileName = e.Name,
+                FileName = Path.GetFileName(e.Name),
                 RelativePath = RelativePathFinder.GetRelativePath(e.FullPath, FileSystemWatcher.Path),
                 AddOrUpdateData = new AddOrUpdateData()
                 {
@@ -129,7 +118,7 @@ namespace Task_4._1._Files
                             elem => new RowInformation()
                             {
                                 RowNumber = rowNumber++,
-                                Context = elem
+                                Content = elem
                             }
                         )
                         .ToList(),
@@ -137,10 +126,9 @@ namespace Task_4._1._Files
                 }
             };
 
-            LayerApplier.Apply(StateStorage, layer);
-            LayerProvider.SaveLayer(layer);
+            OnDirectoryEvent?
+                .Invoke(layer, e.ChangeType);
         }
-
         private void Watcher_Deleted(object sender, FileSystemEventArgs e)
         {
             //string fileEvent = "удален";
@@ -150,13 +138,14 @@ namespace Task_4._1._Files
             {
                 EventDate = DateTime.Now,
                 ChangeType = WatcherChangeTypes.Deleted,
-                FileName = e.Name,
+                FileName = Path.GetFileName(e.Name),
                 RelativePath = RelativePathFinder.GetRelativePath(e.FullPath, FileSystemWatcher.Path)
             };
 
-            LayerApplier.Apply(StateStorage, layer);
-            LayerProvider.SaveLayer(layer);
+            OnDirectoryEvent?
+                .Invoke(layer, e.ChangeType);
         }
+
 
 
         #region

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Task_4._1._Files
+namespace FilesTracker.Model.Tools
 {
     /// <summary>
     /// Система поиска отличий между двумя наборами строк
@@ -22,7 +22,19 @@ namespace Task_4._1._Files
                     changes.Add(new RowInformation()
                     {
                         RowNumber = i,
-                        Context = text2[i]
+                        Content = text2[i]
+                    });
+                }
+            }
+
+            if (text1.Length < text2.Length)
+            {
+                for (int i = text1.Length; i < text2.Length; i++)
+                {
+                    changes.Add(new RowInformation()
+                    {
+                        RowNumber = i,
+                        Content = text2[i]
                     });
                 }
             }

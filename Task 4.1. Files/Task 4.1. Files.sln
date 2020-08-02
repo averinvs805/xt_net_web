@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Task 4.1. Files", "Task 4.1. Files\Task 4.1. Files.csproj", "{BED19C11-223B-465F-B49D-70781332C98A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FilesTracker", "Task 4.1. Files\FilesTracker.csproj", "{BED19C11-223B-465F-B49D-70781332C98A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1C226C44-897A-4992-94DC-B58CA800C9A1} = {1C226C44-897A-4992-94DC-B58CA800C9A1}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilesTracker.Model", "FilesTracker.Model\FilesTracker.Model.csproj", "{1C226C44-897A-4992-94DC-B58CA800C9A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{BED19C11-223B-465F-B49D-70781332C98A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BED19C11-223B-465F-B49D-70781332C98A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BED19C11-223B-465F-B49D-70781332C98A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C226C44-897A-4992-94DC-B58CA800C9A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C226C44-897A-4992-94DC-B58CA800C9A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C226C44-897A-4992-94DC-B58CA800C9A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C226C44-897A-4992-94DC-B58CA800C9A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

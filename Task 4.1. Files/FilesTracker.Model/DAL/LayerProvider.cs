@@ -5,70 +5,42 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.IO;
+using System.Globalization;
 using System.Xml.Serialization;
 
-namespace Task_4._1._Files
+using FilesTracker.Model.Entities;
+using FilesTracker.Model.Tools;
+using FilesTracker.Model.DAL;
+
+namespace FilesTracker.Model
 {
-    /// <summary>
-    /// Изменения в слое
-    /// </summary>
-    class LayerInfo
-    {
-        /// <summary>
-        /// Дата изменения (служит ключем)
-        /// </summary>
-        public DateTime EventDate { set; get; }
 
-        /// <summary>
-        /// Имя файла
-        /// </summary>
-        public string FileName { set; get; }
-
-        /// <summary>
-        /// Новое имя файла (только при переименовании)
-        /// </summary>
-        public string NewName { set; get; }
-
-        /// <summary>
-        /// Относительный путь относительно наблюдаемой папки
-        /// </summary>
-        public string RelativePath { set; get; }
-
-        /// <summary>
-        /// Тип изменения
-        /// </summary>
-        public WatcherChangeTypes ChangeType { set; get; }
-
-        /// <summary>
-        /// Набор изменении внутри содержимого файла
-        /// </summary>
-        public AddOrUpdateData AddOrUpdateData { set; get; }
-
-    }
 
 
     /// <summary>
     /// Провайдер для чтения/записи данных о слое
     /// </summary>
-    class LayerProvider
+    public class LayerProvider
     {
         private readonly string LayerPrefix = "Layer_";
 
         private readonly string DeletePrefix = "Delete_";
         private readonly string RenamePrefix = "Rename_";
 
+        private readonly string TimeStampFormat = "yyyy.MM.dd HH.mm.ss.ffffff";
 
-        private DirectoryInfo LayersDir;
 
-        public LayerProvider(DirectoryInfo layersDir)
+        private readonly RelativePathFinder RelativePathFinder 
+            = new RelativePathFinder();
+
+        private readonly FileProvider FileProvider 
+            = new FileProvider();
+
+
+        public void SaveLayer(DirectoryInfo layersDir, LayerInfo layer)
         {
-            LayersDir = layersDir;
-        }
-
-        public void SaveLayer(LayerInfo layer)
-        {
-            var layerDir = LayersDir
-                .CreateSubdirectory(LayerPrefix + layer.EventDate.ToLongTimeString());
+            var layerDir = layersDir
+                .CreateSubdirectory(LayerPrefix + layer.EventDate.ToString(TimeStampFormat));
 
             var path = Path.Combine(layerDir.FullName, layer.RelativePath);
 
@@ -76,35 +48,41 @@ namespace Task_4._1._Files
             {
                 case WatcherChangeTypes.Deleted:
                     path = Path.Combine(path, $"{DeletePrefix}{layer.FileName}");
-                    File.Create(path);
+                    FileProvider.CreateWithDirectory(path, null);
                     break;
                 case WatcherChangeTypes.Renamed:
                     path = Path.Combine(path, $"{RenamePrefix}{layer.FileName}_{layer.NewName}");
-                    File.Create(path);
+                    FileProvider.CreateWithDirectory(path, null);
                     break;
                 default:
                     path = Path.Combine(path, layer.FileName);
-                    File.Create(path);
-
                     XmlSerializer formatter = new XmlSerializer(typeof(AddOrUpdateData));
 
-                    using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
+                    FileProvider.CreateWithDirectory(path, 
+                        () =>
                     {
-                        formatter.Serialize(fs, layer.AddOrUpdateData);
-                    }
+                        using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
+                        {
+                            formatter.Serialize(fs, layer.AddOrUpdateData);
+                        }
+                    });              
 
                     break;
             }
 
         }
-        public LayerInfo LoadLayer(string directoryName)
+        public LayerInfo LoadLayer(DirectoryInfo layersDir, string directoryName)
         {
-            var layerDir = new DirectoryInfo(Path.Combine(LayersDir.FullName, directoryName));
+            var layerDir = new DirectoryInfo(Path.Combine(layersDir.FullName, directoryName));
             var eventFile = layerDir.GetFiles("*", SearchOption.AllDirectories).First();
 
-            var eventDate = DateTime.Parse(
-                        directoryName.Substring(LayerPrefix.Length)
-                        );
+            var timestamp = directoryName.Substring(LayerPrefix.Length);
+
+            var eventDate = DateTime.ParseExact(
+                timestamp,
+                TimeStampFormat, 
+                CultureInfo.InvariantCulture
+            );
 
 
             if (eventFile.Name.StartsWith(DeletePrefix))
@@ -115,7 +93,8 @@ namespace Task_4._1._Files
                 {
                     EventDate = eventDate,
                     ChangeType = WatcherChangeTypes.Deleted,
-                    FileName = nameData[1]
+                    FileName = nameData[1],
+                    RelativePath = RelativePathFinder.GetRelativePath(eventFile.FullName, layerDir.FullName)
                 };
             }
             else if (eventFile.Name.StartsWith(RenamePrefix))
@@ -127,7 +106,8 @@ namespace Task_4._1._Files
                     EventDate = eventDate,
                     ChangeType = WatcherChangeTypes.Renamed,
                     FileName = nameData[1],
-                    NewName = nameData[2]
+                    NewName = nameData[2],
+                    RelativePath = RelativePathFinder.GetRelativePath(eventFile.FullName, layerDir.FullName)
                 };
             }
             else
@@ -144,15 +124,30 @@ namespace Task_4._1._Files
                         ChangeType = WatcherChangeTypes.Changed,
                         FileName = eventFile.Name,
                         AddOrUpdateData = addOrUpdateData,
+                        RelativePath = RelativePathFinder.GetRelativePath(eventFile.FullName, layerDir.FullName)
                     };
                 }
             }
         }
 
-
-        public LayerInfo[] GetAllLayers()
+        public void DeleteLayer(DirectoryInfo layersDir, LayerInfo layer) 
         {
-            var layersNames = LayersDir
+            var path = Path.Combine
+                (
+                    layersDir.FullName,
+                    LayerPrefix + layer
+                        .EventDate
+                        .ToString(TimeStampFormat)                    
+                );
+
+            new DirectoryInfo(path)
+                .Delete(true);
+        }
+
+
+        public LayerInfo[] GetAllLayers(DirectoryInfo layersDir) 
+        {
+            var layersNames = layersDir
                 .GetDirectories("*", SearchOption.TopDirectoryOnly)
                 .Where(e => e.Name.StartsWith(LayerPrefix))
                 .ToArray();
@@ -161,7 +156,7 @@ namespace Task_4._1._Files
 
             for (int i = 0; i < layersNames.Length; i++)
             {
-                layers[i] = LoadLayer(layersNames[i].Name);
+                layers[i] = LoadLayer(layersDir, layersNames[i].Name);
             }
 
             layers = layers
@@ -170,7 +165,6 @@ namespace Task_4._1._Files
 
             return layers;
         }
-
 
     }
 

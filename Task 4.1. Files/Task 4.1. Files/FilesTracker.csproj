@@ -6,4 +6,8 @@
     <RootNamespace>Task_4._1._Files</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FilesTracker.Model\FilesTracker.Model.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,26 @@
+nav {
+    height: 200px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
+}
+
+a { 
+    text-decoration: none;
+    color:#880000;
+}
+
+li {
+    list-style-type: none;
+}
+  
+ul {
+    padding: 10px;
+    border: 1px solid;
+	border-color: #555555;
+    border-radius: 10px;
+    width: 200px;
+	color: #880000;
+    background-color: #F9E497;
+    box-shadow: 5px 5px #880000;
+	line-height: 1.5;
+}
